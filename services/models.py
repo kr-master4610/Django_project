@@ -120,10 +120,9 @@ class Post(models.Model):
     posted_at = models.DateTimeField(default=timezone.now)
 
 
-# МОДЕЛИ ДЛЯ ДОМАШНЕГО ЗАДАНИЯ (Домашнее задание 8)
+# МОДЕЛИ ДЛЯ ДОМАШНЕГО ЗАДАНИЯ (Домашнее задание 9)
 
 
-# Списки выбора (choices) для статусов задач и подзадач
 STATUS_CHOICES = [
     ('new', 'New'),
     ('in_progress', 'In progress'),
@@ -133,56 +132,51 @@ STATUS_CHOICES = [
 ]
 
 class Category(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.name
 
+    class Meta:
+        db_table = 'task_manager_category'
+        verbose_name = 'Category'
+        verbose_name_plural = 'Categories'
+
 
 class Task(models.Model):
-    title = models.CharField(
-        max_length=200,
-        unique_for_date='created_at'  # Уникально для даты создания, как в задании
-    )
+    title = models.CharField(max_length=200, unique=True, unique_for_date='created_at')
     description = models.TextField()
-    categories = models.ManyToManyField(
-        Category,
-        related_name='tasks'
-    )  # Связь многие ко многим
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='new'
-    )
+    categories = models.ManyToManyField(Category, related_name='tasks')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
     deadline = models.DateTimeField()
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )  # Автоматическое заполнение при создании
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        db_table = 'task_manager_task'
+        ordering = ['-created_at']
+        verbose_name = 'Task'
+        verbose_name_plural = 'Tasks'
 
 
 class SubTask(models.Model):
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200, unique=True)
     description = models.TextField()
-    task = models.ForeignKey(
-        Task,
-        on_delete=models.CASCADE,
-        related_name='subtasks'
-    )  # Связь один ко многим (при удалении задачи удалятся и подзадачи)
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='new'
-    )
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='subtasks')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
     deadline = models.DateTimeField()
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )  # Автоматическое заполнение при создании
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        db_table = 'task_manager_subtask'
+        ordering = ['-created_at']
+        verbose_name = 'SubTask'
+        verbose_name_plural = 'SubTasks'
 
     
 
